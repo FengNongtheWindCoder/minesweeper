@@ -14,44 +14,37 @@ using System.Collections;
 
 public class MineboxController : MonoBehaviour
 {
-    enum Boxstate { covered,opened,flaged,};
+    enum BoxState { covered, opened, flaged, questioned };
+    enum UserAction { nothing, leftclick, rightclick };
+    BoxState currentState;
+    UserAction currentAction;
     private bool hasMine = false;
     public bool HasMine
     {
         set
         {
             hasMine = value;
-            if (value)
-            {
-                gameObject.GetComponent<SpriteRenderer>().color = Color.red;
-            }
         }
         get { return hasMine; }
     }
     public int surroundingMine = 0;
     public BoardManager boardManager;
     SpriteRenderer spriteRenderer;
-    bool isopened = false;
     GameManager gameManager;
+    public Sprite[] numberSprites;
+    public Sprite mineSprite;
+    public Sprite flagSprite;
+    public Sprite questionSprite;
+    public SpriteRenderer markerRenderer;
     // Use this for initialization
     void Start()
     {
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
         gameManager = GameManager.instance;
+        currentState = BoxState.covered;
+        currentAction = UserAction.nothing;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (gameManager.isgamefinish)
-        {
-            if (hasMine)
-            {
-                spriteRenderer.color = Color.blue;
-            }
-            enabled = false;
-        }
-    }
     /// <summary>
     /// onmousedown只能处理左键单击
     /// gui事件用enable不能控制
@@ -61,7 +54,7 @@ public class MineboxController : MonoBehaviour
         Debug.Log("click");
         //在已经打开的位置点击无效
         //游戏结束，不论成功失败，不会再继续操作
-        if (isopened || gameManager.isgamefinish)
+        if (gameManager.isgamefinish)
         {
             return;
         }
@@ -71,20 +64,9 @@ public class MineboxController : MonoBehaviour
             gameManager.ismineSetupFinished = true;
             boardManager.SetupMine(this);
         }
-        if (HasMine) {
-            //点击有雷的部分gameover
-           gameManager.gameOver();
-           return;
-        }
-        else
-        {
-            //点击没有雷的部分，增加打开的box数目，check成功状态
-            gameManager.openedboxNum++;
-            spriteRenderer.color = Color.yellow;
-            //将状态标为已经打开
-            isopened = true;
-        }
-        gameManager.checkGameSuccess();
+        currentAction = UserAction.leftclick;
+        changeState();
+        currentAction = UserAction.nothing;
     }
 
     /// <summary>
@@ -94,7 +76,84 @@ public class MineboxController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1))
         {
-            Debug.Log("right click");
+            currentAction = UserAction.rightclick;
+            changeState();
+            currentAction = UserAction.nothing;
         }
+    }
+
+    /// <summary>
+    /// minebox状态机
+    /// </summary>
+    void changeState()
+    {
+        switch (currentState)
+        {
+            case BoxState.covered:
+                if (currentAction == UserAction.leftclick)
+                {
+                    if (HasMine)
+                    {
+                        //点击有雷的部分gameover
+                        gameManager.gameOver();
+                        //将显示设置为背景红色，marker为地雷图
+                        spriteRenderer.color = Color.red;
+                        setMarker(true, mineSprite);
+                        return;
+                    }
+                    else
+                    {
+                        //点击没有雷的部分，增加打开的box数目，check成功状态
+                        gameManager.openedboxNum++;
+                        spriteRenderer.sprite = numberSprites[surroundingMine];
+                        //将状态标为已经打开
+                        currentState = BoxState.opened;
+                        gameManager.checkGameSuccess();
+                    }
+                }
+                else if (currentAction == UserAction.rightclick)
+                {
+                    //标记flag，推移状态
+                    markerRenderer.sprite = mineSprite;
+                    markerRenderer.gameObject.SetActive(true);
+                    setMarker(true, flagSprite);
+                    currentState = BoxState.flaged;
+                }
+
+                break;
+            case BoxState.opened:
+                //open不处理任何状态推移
+                break;
+            case BoxState.flaged:
+                //flag 状态只处理右键点击
+                if (currentAction != UserAction.rightclick)
+                {
+                    break;
+                }
+                setMarker(true, questionSprite);
+                currentState = BoxState.questioned;
+                break;
+            case BoxState.questioned:
+                //question 状态只处理右键点击
+                if (currentAction != UserAction.rightclick)
+                {
+                    break;
+                }
+                setMarker(false, null);
+                currentState = BoxState.covered;
+                break;
+            default:
+                break;
+        }
+    }
+    /// <summary>
+    /// 修改marker显示的sprite和active状态
+    /// </summary>
+    /// <param name="markeractive"></param>
+    /// <param name="changeto"></param>
+    void setMarker(bool markeractive, Sprite changeto)
+    {
+        markerRenderer.sprite = changeto;
+        markerRenderer.gameObject.SetActive(markeractive);
     }
 }
