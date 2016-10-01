@@ -48,8 +48,33 @@ public class MineboxController : MonoBehaviour
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
         gameManager = GameManager.instance;
         currentState = BoxState.covered;
+        gameManager.GameFinishEvent += onGameFinish;
     }
 
+    void OnDestroy()
+    {
+        gameManager.GameFinishEvent -= onGameFinish;
+    }
+
+    /// <summary>
+    /// 在游戏结束时显示出地雷位置
+    /// </summary>
+    /// <param name="finishtype"></param>
+    void onGameFinish(string finishtype)
+    {
+        if (!HasMine) { return; }
+        if (finishtype.ToLower().Equals("success"))
+        {
+            //将显示设置为背景绿色，marker为地雷图
+            spriteRenderer.color = Color.green;
+            setMarker(true, mineSprite);
+        }
+        else if (finishtype.ToLower().Equals("failed"))
+        {
+            // marker为地雷图
+            setMarker(true, mineSprite);
+        }
+    }
     /// <summary>
     /// 处理鼠标事件
     /// </summary>
@@ -154,10 +179,7 @@ public class MineboxController : MonoBehaviour
     /// </summary>
     public void neighbourClick()
     {
-        if (currentState == BoxState.covered)
-        {
-            changeState(UserAction.leftclick);
-        }
+        changeState(UserAction.leftclick);
     }
     /// <summary>
     /// minebox状态机
@@ -180,15 +202,14 @@ public class MineboxController : MonoBehaviour
                     if (!gameManager.ismineSetupFinished)
                     {
                         gameManager.ismineSetupFinished = true;
-                        boardManager.SetupMine(this);
+                        gameManager.startGame(this);
                     }
                     if (HasMine)
                     {
                         //点击有雷的部分gameover
                         gameManager.gameOver();
-                        //将显示设置为背景红色，marker为地雷图
+                        //标记点击的雷位置为红色
                         spriteRenderer.color = Color.red;
-                        setMarker(true, mineSprite);
                         return;
                     }
                     else

@@ -10,7 +10,8 @@
  *History:  
 **********************************************************************************/
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using System;
 using System.Collections;
 
 public class GameManager : MonoBehaviour
@@ -27,6 +28,8 @@ public class GameManager : MonoBehaviour
     public int openedboxNum = 0;
     public bool ismineSetupFinished = false;
     public bool isgamefinish = false;
+    public event Action GameStartEvent;
+    public event Action<string> GameFinishEvent;
     void Awake()
     {
         if (instance == null)
@@ -69,14 +72,28 @@ public class GameManager : MonoBehaviour
         safeboxNum = size_x * size_y - mine_num;
         boardManager.SetupEmpty(size_x, size_y, mine_num);
     }
-
-
+    /// <summary>
+    /// 特殊处理点击之后游戏才开始的情况，在box里调用
+    /// 地雷布局忽略第一次点击的位置
+    /// </summary>
+    public void startGame(MineboxController ignoreBox)
+    {
+        boardManager.SetupMine(ignoreBox);
+        if (GameStartEvent != null )
+        {
+            GameStartEvent();
+        }
+    }
     public bool checkGameSuccess()
     {
         if (openedboxNum == safeboxNum)
         {
             Debug.Log("game success");
             isgamefinish = true;
+            if (GameFinishEvent !=null)
+            {
+                GameFinishEvent("success");
+            }
             return true;
         }
         return false;
@@ -84,6 +101,10 @@ public class GameManager : MonoBehaviour
     public void gameOver()
     {
         isgamefinish = true;
+        if (GameFinishEvent != null)
+        {
+            GameFinishEvent("failed");
+        }
         Debug.Log("game over");
     }
 }
