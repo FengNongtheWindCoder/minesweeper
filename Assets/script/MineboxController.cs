@@ -11,6 +11,7 @@
 **********************************************************************************/
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MineboxController : MonoBehaviour
 {
@@ -148,7 +149,16 @@ public class MineboxController : MonoBehaviour
     {
         ismouseover = false;
     }
-
+    /// <summary>
+    /// 处理通过双击数字被打开的box
+    /// </summary>
+    public void neighbourClick()
+    {
+        if (currentState == BoxState.covered)
+        {
+            changeState(UserAction.leftclick);
+        }
+    }
     /// <summary>
     /// minebox状态机
     /// </summary>
@@ -189,6 +199,13 @@ public class MineboxController : MonoBehaviour
                         //将状态标为已经打开
                         currentState = BoxState.opened;
                         gameManager.checkGameSuccess();
+                        if (surroundingMine == 0)
+                        {
+                            foreach (var item in boardManager.getNeighbourBoxController(this))
+                            {
+                                item.neighbourClick();
+                            }
+                        }
                     }
                 }
                 else if (currentAction == UserAction.rightclick)
@@ -204,7 +221,27 @@ public class MineboxController : MonoBehaviour
             case BoxState.opened:
                 //open不处理任何状态推移,只是在双击的时候判断是不是打开周围的邻居
                 //只在当前邻居标记的flag数目等于邻居地雷数目时，可以打开周围邻居
-
+                //0的时候不处理
+                if (currentAction != UserAction.doubleleftclick || surroundingMine == 0)
+                {
+                    break;
+                }
+                List<MineboxController> neighbours = boardManager.getNeighbourBoxController(this);
+                int flaged_neighbours = 0;
+                foreach (var item in neighbours)
+                {
+                    if (item.currentState == BoxState.flaged)
+                    {
+                        flaged_neighbours++;
+                    }
+                }
+                if (flaged_neighbours == surroundingMine)
+                {
+                    foreach (var item in neighbours)
+                    {
+                        item.neighbourClick();
+                    }
+                }
                 break;
             case BoxState.flaged:
                 //flag 状态只处理右键点击

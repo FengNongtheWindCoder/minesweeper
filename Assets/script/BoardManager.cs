@@ -70,7 +70,7 @@ public class BoardManager : MonoBehaviour
         {
             MineboxController mineBox = Randombox();
             mineBox.HasMine = true;
-            List<Vector2> neighbours = getNeighbourBoxs(mineBox);
+            List<Vector2> neighbours = getNeighbourBoxPos(mineBox);
             foreach (var boxpos in neighbours)
             {
                 allMineboxdict[boxpos].surroundingMine++;
@@ -85,18 +85,18 @@ public class BoardManager : MonoBehaviour
     {
         Vector2 curpos = ignoreBox.transform.position;
         allPostion.Remove(curpos);
-        List<Vector2> neighbours = getNeighbourBoxs(ignoreBox);
+        List<Vector2> neighbours = getNeighbourBoxPos(ignoreBox);
         foreach (var box in neighbours)
         {
             allPostion.Remove(box);
         }
     }
     /// <summary>
-    /// 获取指定位置周围位置的box
+    /// 获取指定位置周围位置的box坐标
     /// </summary>
     /// <param name="mineBox"></param>
     /// <returns></returns>
-    List<Vector2> getNeighbourBoxs(MineboxController mineBox)
+    List<Vector2> getNeighbourBoxPos(MineboxController mineBox)
     {
         List<Vector2> result = new List<Vector2>();
         Vector3 curpos = mineBox.transform.position;
@@ -113,6 +113,21 @@ public class BoardManager : MonoBehaviour
         }
         return result;
     }
+    /// <summary>
+    /// 获取指定位置周围box的MineboxController组件
+    /// </summary>
+    /// <param name="mineBox"></param>
+    /// <returns></returns>
+    public List<MineboxController> getNeighbourBoxController(MineboxController mineBox) {
+        List<Vector2> neighbours = getNeighbourBoxPos(mineBox);
+        List<MineboxController> controllers = new List<MineboxController>();
+        foreach (var item in neighbours)
+        {
+            controllers.Add(allMineboxdict[item]);
+        }
+        return controllers;
+    }
+
     /// <summary>
     /// 在位置数组里取随机的一个位置，并获取对应的minebox，删除数组内的这个位置
     /// </summary>
