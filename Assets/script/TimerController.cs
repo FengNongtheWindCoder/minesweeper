@@ -15,20 +15,18 @@ using System.Collections;
 
 public class TimerController : MonoBehaviour
 {
-    GameManager gameManager;
     public Text timertext;
     int timecount = 0;
     // Use this for initialization
     void Start()
     {
-        gameManager = GameManager.instance;
-        gameManager.GameFinishEvent += onGameFinish;
-        gameManager.GameStartEvent += onGameStart;
+        GameManager.instance.GameFinishEvent += onGameFinish;
+        GameManager.instance.GameStartEvent += onGameStart;
     }
     void OnDestroy()
     {
-        gameManager.GameFinishEvent -= onGameFinish;
-        gameManager.GameStartEvent -= onGameStart;
+        GameManager.instance.GameFinishEvent -= onGameFinish;
+        GameManager.instance.GameStartEvent -= onGameStart;
     }
     /// <summary>
     /// 监听游戏启动事件并开始计时

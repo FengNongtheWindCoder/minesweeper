@@ -32,7 +32,6 @@ public class MineboxController : MonoBehaviour
     public int surroundingMine = 0;
     public BoardManager boardManager;
     SpriteRenderer spriteRenderer;
-    GameManager gameManager;
     public Sprite[] numberSprites;
     public Sprite mineSprite;
     public Sprite flagSprite;
@@ -46,14 +45,13 @@ public class MineboxController : MonoBehaviour
     void Start()
     {
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-        gameManager = GameManager.instance;
         currentState = BoxState.covered;
-        gameManager.GameFinishEvent += onGameFinish;
+        GameManager.instance.GameFinishEvent += onGameFinish;
     }
 
     void OnDestroy()
     {
-        gameManager.GameFinishEvent -= onGameFinish;
+        GameManager.instance.GameFinishEvent -= onGameFinish;
     }
 
     /// <summary>
@@ -82,7 +80,7 @@ public class MineboxController : MonoBehaviour
     {
         return;
         Event e = Event.current;
-        if (!ismouseover || e.type != EventType.MouseDown || gameManager.isgamefinish)
+        if (!ismouseover || e.type != EventType.MouseDown || GameManager.instance.isgamefinish)
         {
             return;
         }
@@ -126,7 +124,7 @@ public class MineboxController : MonoBehaviour
     public void OnMouseUpAsButton()
     {
         //游戏结束，不论成功失败，不会再继续操作
-        if (gameManager.isgamefinish)
+        if (GameManager.instance.isgamefinish)
         {
             return;
         }
@@ -199,15 +197,15 @@ public class MineboxController : MonoBehaviour
                 if (currentAction == UserAction.leftclick)
                 {
                     //第一次点击处理地雷布局，自己没有雷，自己周围也不会有雷
-                    if (!gameManager.ismineSetupFinished)
+                    if (!GameManager.instance.ismineSetupFinished)
                     {
-                        gameManager.ismineSetupFinished = true;
-                        gameManager.startGame(this);
+                        GameManager.instance.ismineSetupFinished = true;
+                        GameManager.instance.startGame(this);
                     }
                     if (HasMine)
                     {
                         //点击有雷的部分gameover
-                        gameManager.gameOver();
+                        GameManager.instance.gameOver();
                         //标记点击的雷位置为红色
                         spriteRenderer.color = Color.red;
                         return;
@@ -215,11 +213,11 @@ public class MineboxController : MonoBehaviour
                     else
                     {
                         //点击没有雷的部分，增加打开的box数目，check成功状态
-                        gameManager.openedboxNum++;
+                        GameManager.instance.openedboxNum++;
                         spriteRenderer.sprite = numberSprites[surroundingMine];
                         //将状态标为已经打开
                         currentState = BoxState.opened;
-                        gameManager.checkGameSuccess();
+                        GameManager.instance.checkGameSuccess();
                         if (surroundingMine == 0)
                         {
                             foreach (var item in boardManager.getNeighbourBoxController(this))
@@ -236,8 +234,8 @@ public class MineboxController : MonoBehaviour
                     markerRenderer.gameObject.SetActive(true);
                     setMarker(true, flagSprite);
                     currentState = BoxState.flaged;
+                    GameManager.instance.RemainingMinenum--;
                 }
-
                 break;
             case BoxState.opened:
                 //open不处理任何状态推移,只是在双击的时候判断是不是打开周围的邻居
@@ -272,6 +270,7 @@ public class MineboxController : MonoBehaviour
                 }
                 setMarker(true, questionSprite);
                 currentState = BoxState.questioned;
+                GameManager.instance.RemainingMinenum++;
                 break;
             case BoxState.questioned:
                 //question 状态只处理右键点击

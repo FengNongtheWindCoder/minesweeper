@@ -15,7 +15,6 @@ using System.Collections;
 
 public class ChangeRestartButton : MonoBehaviour
 {
-    GameManager gameManager;
     public Image restartImg;
     public Sprite successSprite;
     public Sprite failedSprite;
@@ -23,8 +22,7 @@ public class ChangeRestartButton : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        gameManager = GameManager.instance;
-        gameManager.GameFinishEvent += onGameFinish;
+        GameManager.instance.GameFinishEvent += onGameFinish;
     }
     /// <summary>
     /// 游戏结束时修改一下按钮的样式
@@ -43,6 +41,6 @@ public class ChangeRestartButton : MonoBehaviour
     }
     void OnDestroy()
     {
-        gameManager.GameFinishEvent -= onGameFinish;
+        GameManager.instance.GameFinishEvent -= onGameFinish;
     }
 }

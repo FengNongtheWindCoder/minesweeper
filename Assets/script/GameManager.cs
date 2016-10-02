@@ -30,6 +30,24 @@ public class GameManager : MonoBehaviour
     public bool isgamefinish = false;
     public event Action GameStartEvent;
     public event Action<string> GameFinishEvent;
+    public event Action<int> FlagedboxChangeEvent;
+    int remainingMinenum = 0;
+    //剩余地雷数变化触发一个事件通知其他组件
+    public int RemainingMinenum
+    {
+        set
+        {
+            remainingMinenum = value;
+            if (FlagedboxChangeEvent != null)
+            {
+                FlagedboxChangeEvent(remainingMinenum);
+            }
+        }
+        get
+        {
+            return remainingMinenum;
+        }
+    }
     void Awake()
     {
         if (instance == null)
@@ -70,6 +88,7 @@ public class GameManager : MonoBehaviour
     void InitGame()
     {
         safeboxNum = size_x * size_y - mine_num;
+        remainingMinenum = mine_num;
         boardManager.SetupEmpty(size_x, size_y, mine_num);
     }
     /// <summary>
@@ -79,7 +98,7 @@ public class GameManager : MonoBehaviour
     public void startGame(MineboxController ignoreBox)
     {
         boardManager.SetupMine(ignoreBox);
-        if (GameStartEvent != null )
+        if (GameStartEvent != null)
         {
             GameStartEvent();
         }
@@ -90,7 +109,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("game success");
             isgamefinish = true;
-            if (GameFinishEvent !=null)
+            if (GameFinishEvent != null)
             {
                 GameFinishEvent("success");
             }
