@@ -74,37 +74,6 @@ public class MineboxController : MonoBehaviour
         }
     }
     /// <summary>
-    /// 处理鼠标事件
-    /// </summary>
-    public void OnGUI()
-    {
-        return;
-        Event e = Event.current;
-        if (!ismouseover || e.type != EventType.MouseDown || GameManager.instance.isgamefinish)
-        {
-            return;
-        }
-        if (e.button == 0)
-        {
-            Debug.Log(e.clickCount);
-            if (e.clickCount == 1)
-            {
-                Debug.Log(" leftclick");
-                changeState(UserAction.leftclick);
-            }
-            else if (e.clickCount == 2)
-            {
-                Debug.Log(" doubleleftclick");
-                changeState(UserAction.doubleleftclick);
-            }
-        }
-        else if (e.button == 1)
-        {
-            Debug.Log(" rightclick");
-            changeState(UserAction.rightclick);
-        }
-    }
-    /// <summary>
     /// 按照给定的时间，将上次点击的记录删除掉，一般是doubleClickDelay
     /// </summary>
     /// <param name="delaytime"></param>
@@ -137,20 +106,17 @@ public class MineboxController : MonoBehaviour
             changeState(UserAction.leftclick);
             lastClicktime = Time.unscaledTime;
             StartCoroutine(clearLastClicktime(doubleClickDelay));
-            Debug.Log("this is a single click ");
         }
         else if (Time.unscaledTime < (lastClicktime + doubleClickDelay))
         {
             lastClicktime = 0;
             changeState(UserAction.doubleleftclick);
-            Debug.Log("this is a double click " + (Time.unscaledTime - lastClicktime));
         }
         else
         {
             //因为有clearLastClicktime，这里可能不会进来
             lastClicktime = 0;
             changeState(UserAction.leftclick);
-            Debug.Log("this is a single click ");
         }
     }
     /// <summary>
@@ -162,15 +128,6 @@ public class MineboxController : MonoBehaviour
         {
             changeState(UserAction.rightclick);
         }
-    }
-    //检测当前鼠标是否在上方
-    public void OnMouseEnter()
-    {
-        ismouseover = true;
-    }
-    public void OnMouseExit()
-    {
-        ismouseover = false;
     }
     /// <summary>
     /// 处理通过双击数字被打开的box
