@@ -111,6 +111,7 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+        result.Remove(curpos);
         return result;
     }
     /// <summary>
